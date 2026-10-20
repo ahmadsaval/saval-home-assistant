@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1224">
+<title>Saval Home Assistant</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1224;--panel:#131f37;--panel2:#1b2a46;--line:#304361;--text:#f4f7fb;--muted:#a8b7cf;--accent:#75e4da;--yellow:#f7d780}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at top left,#20385a 0,#0b1224 48%);color:var(--text);font-family:system-ui,-apple-system,Arial,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:20px clamp(16px,4vw,42px);border-bottom:1px solid #263753;background:#0b1224cc}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#75e4da,#7c9dff);color:#071525;display:grid;place-items:center;font-size:28px;font-weight:900}
+h1{font-size:clamp(22px,3vw,34px);margin:0;letter-spacing:-.6px}
+.tagline{color:var(--muted);font-size:13px;margin-top:3px}
+.statuspill{border:1px solid var(--line);border-radius:99px;padding:8px 12px;color:var(--yellow);font-size:12px;white-space:nowrap}
+main{max-width:1240px;margin:auto;padding:clamp(14px,3vw,30px)}
+.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:18px}
+.card{background:#131f37eF;border:1px solid var(--line);border-radius:22px;padding:clamp(16px,2.5vw,26px);box-shadow:0 12px 40px #0002}
+.card h2{margin:0 0 8px;font-size:20px}
+.muted{color:var(--muted);line-height:1.55}
+.voicebox{display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 8px 12px}
+.mic{width:106px;height:106px;border-radius:50%;border:1px solid #8ef1e2;background:linear-gradient(145deg,#8cf0e4,#5ca6e7);color:#071525;font-size:42px;display:grid;place-items:center;box-shadow:0 0 0 10px #75e4da13;cursor:pointer}
+.mic:disabled{opacity:.5}
+#voiceStatus{margin:18px 0 6px;color:var(--yellow);font-weight:700;min-height:24px}
+#heard{min-height:30px;color:var(--muted);overflow-wrap:anywhere}
+.response{width:100%;text-align:left;background:#0c162a;border:1px solid #273955;border-radius:16px;padding:16px;margin-top:12px;min-height:100px;line-height:1.55}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+button.action{border:0;border-radius:12px;padding:12px 15px;font-weight:750;cursor:pointer;background:var(--accent);color:#071525}
+button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.tile{border:1px solid var(--line);background:#0d182c;border-radius:15px;padding:14px;min-height:104px}
+.tilehead{display:flex;align-items:center;gap:10px;font-weight:750}
+.tileicon{font-size:23px}
+.tile p{font-size:12px;color:var(--muted);line-height:1.4;margin:8px 0 0}
+.notice{background:#302918;border:1px solid #665328;border-radius:12px;padding:12px;color:#fce7a4;font-size:13px;line-height:1.55;margin-top:16px}
+.examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.example{font-size:13px;border:1px solid var(--line);background:#0d182c;color:#dce8f8;border-radius:99px;padding:8px 11px;cursor:pointer}
+footer{padding:20px 4px;color:var(--muted);font-size:12px;line-height:1.6}
+@media(max-width:780px){.layout{grid-template-columns:1fr}.statuspill{display:none}}
+@media(min-width:1000px){.voicebox{padding:28px 20px}.mic{width:120px;height:120px;font-size:48px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">S</div><div><h1>Saval Home Assistant</h1><div class="tagline">Asisten rumah pribadi · Prototipe awal</div></div></div>
+  <div class="statuspill">● MODE DEMO · BELUM TERHUBUNG KE RUMAH</div>
+</header>
+<main>
+  <div class="layout">
+    <section class="card">
+      <h2>Asisten suara</h2>
+      <p class="muted">Tekan mikrofon lalu ucapkan perintah dalam bahasa Indonesia. Tablet ini akan menguji pengenalan ucapan dan menjawab dengan suara jika browser mendukungnya.</p>
+      <div class="voicebox">
+        <button class="mic" id="listen" aria-label="Mulai berbicara">🎙️</button>
+        <div id="voiceStatus">Siap mendengarkan</div>
+        <div id="heard">Ucapan Anda akan muncul di sini.</div>
+        <div class="response"><strong>Jawaban Saval</strong><div id="answer" style="margin-top:8px">Halo! Saya Saval Home Assistant. Ini tahap pertama, jadi saya belum mengendalikan perangkat fisik.</div></div>
+        <div class="row" style="justify-content:center;margin-top:14px">
+          <button class="action" id="repeat">🔊 Ulangi jawaban</button>
+          <button class="action secondary" id="clear">Bersihkan</button>
+        </div>
+      </div>
+      <p class="muted" style="margin-bottom:0">Coba perintah:</p>
+      <div class="examples">
+        <button class="example" data-sample="Nyalakan lampu ruang tamu">Nyalakan lampu</button>
+        <button class="example" data-sample="Matikan semua lampu">Matikan semua lampu</button>
+        <button class="example" data-sample="Nyalakan TV">Nyalakan TV</button>
+        <button class="example" data-sample="Nyalakan AC">Nyalakan AC</button>
+        <button class="example" data-sample="Buat konten Instagram dan TikTok">Buat konten sosial</button>
+        <button class="example" data-sample="Buat dan upload konten Instagram dan TikTok">Buat & upload konten</button>
+      </div>
+    </section>
+    <section class="card">
+      <h2>Panel rumah</h2>
+      <p class="muted">Ini gambaran modul yang akan kita sambungkan satu per satu setelah mengetahui perangkat yang tersedia di rumah.</p>
+      <div class="tiles">
+        <div class="tile"><div class="tilehead"><span class="tileicon">💡</span>Lampu</div><p>Kontrol hidup/mati melalui perangkat kompatibel.</p></div>
+        <div class="tile"><div class="tilehead"><span class="tileicon">📺</span>TV & AC</div><p>Jaringan, IR blaster, atau integrasi resmi.</p></div>
+        <div class="tile"><div class="tilehead"><span class="tileicon">📹</span>CCTV (tahap lanjut)</div><p>Dapat ditambahkan setelah kontrol dasar berfungsi.</p></div>
+        <div class="tile"><div class="tilehead"><span class="tileicon">📱</span>Konten sosial</div><p>Buat ide, naskah, caption, dan materi Instagram/TikTok. Unggah setelah ditinjau dan dikonfirmasi.</p></div>
+      </div>
+      <div class="notice"><strong>Keamanan:</strong> versi demo tidak menyalakan perangkat, tidak membuka CCTV, tidak memesan makanan, dan tidak memproses pembayaran. Jangan masukkan PIN, kata sandi, atau API key ke halaman ini.</div>
+    </section>
+  </div>
+  <footer>Catatan: pengenalan suara browser dapat memerlukan koneksi internet dan izin mikrofon. Jika tidak berjalan dari file lokal, kita akan mencoba cara hosting gratis yang aman. AI ChatGPT dan kontrol perangkat nyata belum disambungkan pada versi ini.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let lastAnswer=$('answer').textContent;
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+function say(text){
+ lastAnswer=text;
+ if(!('speechSynthesis' in window))return;
+ speechSynthesis.cancel();
+ const utterance=new SpeechSynthesisUtterance(text);
+ utterance.lang='id-ID';utterance.rate=1;speechSynthesis.speak(utterance);
+}
+function interpret(raw){
+ const s=raw.toLowerCase();
+ if(/upload|unggah|publikasikan|posting|postingkan/.test(s) && /konten|instagram|tiktok|sosial|media sosial/.test(s))
+  return 'Perintah dipahami: publikasikan konten ke media sosial. Nanti Saval akan menampilkan pratinjau dan meminta persetujuan Anda sebelum mengunggah. Fitur unggah belum terhubung ke akun Instagram atau TikTok.';
+ if(/buat|bikin|siapkan|produksi/.test(s) && /konten|instagram|tiktok|sosial|media sosial/.test(s))
+  return 'Perintah dipahami: buat konten untuk Instagram dan TikTok. Nanti Saval dapat membantu menyiapkan ide, naskah, caption, dan materi yang sesuai. Jika Anda meminta “buat dan upload”, sistem akan membuat draf dulu lalu meminta persetujuan sebelum publikasi. Integrasi AI dan akun sosial belum terhubung.';
+ if(/cctv|kamera/.test(s))
+  return 'Perintah dipahami: membuka atau memeriksa CCTV. Kamera belum terhubung. Nanti kita hanya akan menghubungkan kamera yang Anda izinkan.';
+ if(/lampu/.test(s)&&/mati|matikan|padam|off/.test(s))
+  return 'Perintah dipahami: matikan lampu. Belum dijalankan karena perangkat rumah belum terhubung.';
+ if(/lampu/.test(s)&&/nyalakan|hidupkan|nyala|on/.test(s))
+  return 'Perintah dipahami: nyalakan lampu. Belum dijalankan karena perangkat rumah belum terhubung.';
+ if(/lampu/.test(s))return 'Saya menangkap bahwa Anda membicarakan lampu. Katakan “nyalakan” atau “matikan”.';
+ if(/tv|televisi/.test(s))return 'Perintah dipahami: nyalakan atau kendalikan TV. TV belum terhubung.';
+ if(/\bac\b|pendingin|air conditioner/.test(s))return 'Perintah dipahami: nyalakan atau kendalikan AC. AC belum terhubung.';
+ if(/halo|hai|saval/.test(s))return 'Halo! Saya Saval Home Assistant. Saya siap membantu mengatur rumah dan menyiapkan alur kerja konten media sosial.';
+ return 'Ucapan diterima. Versi awal ini mengenali perintah lampu, TV, AC, dan alur konten media sosial. Integrasi AI dan perangkat nyata akan ditambahkan pada tahap berikutnya.';
+}
+if(!Recognition){
+ $('voiceStatus').textContent='Browser belum mendukung pengenalan suara. Coba Chrome versi terbaru.';
+ $('listen').disabled=true;
+}else{
+ const rec=new Recognition();rec.lang='id-ID';rec.interimResults=false;rec.maxAlternatives=1;
+ rec.onstart=()=>{$('voiceStatus').textContent='Mendengarkan… silakan bicara';$('listen').disabled=true};
+ rec.onresult=e=>{
+  const heard=e.results[0][0].transcript;$('heard').textContent='“'+heard+'”';
+  const reply=interpret(heard);$('answer').textContent=reply;say(reply);
+ };
+ rec.onerror=e=>{$('voiceStatus').textContent='Pengenalan suara gagal: '+e.error+'. Periksa izin mikrofon dan koneksi.'};
+ rec.onend=()=>{$('listen').disabled=false;if($('voiceStatus').textContent.startsWith('Mendengarkan'))$('voiceStatus').textContent='Selesai mendengarkan'};
+ $('listen').addEventListener('click',()=>{try{rec.start()}catch(e){$('voiceStatus').textContent='Tunggu sebentar, lalu coba lagi.'}});
+}
+$('repeat').onclick=()=>say(lastAnswer);
+$('clear').onclick=()=>{$('heard').textContent='Ucapan Anda akan muncul di sini.';$('answer').textContent='Siap menerima perintah berikutnya.';lastAnswer=$('answer').textContent;$('voiceStatus').textContent='Siap mendengarkan';};
+document.querySelectorAll('[data-sample]').forEach(btn=>btn.addEventListener('click',()=>{
+ const heard=btn.dataset.sample;$('heard').textContent='“'+heard+'”';
+ const reply=interpret(heard);$('answer').textContent=reply;say(reply);
+}));
+</script>
+</body>
+</html>
